@@ -20,6 +20,8 @@ spring:
           enabled: true
 
 initializr:
+  ui:
+    title: PAL Initializr
   env:
     boms:
       azure:
