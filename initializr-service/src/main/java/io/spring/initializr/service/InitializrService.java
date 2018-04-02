@@ -16,13 +16,17 @@
 
 package io.spring.initializr.service;
 
-import java.util.concurrent.Executor;
-
+import io.spring.initializr.generator.ProjectGenerator;
+import io.spring.initializr.metadata.DependencyMetadataProvider;
 import io.spring.initializr.metadata.InitializrMetadataProvider;
+import io.spring.initializr.service.customization.PalMainController;
+import io.spring.initializr.service.customization.PalProjectGenerator;
+import io.spring.initializr.util.TemplateRenderer;
 import io.spring.initializr.web.project.LegacyStsController;
-
+import io.spring.initializr.web.project.MainController;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +34,8 @@ import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.resource.ResourceUrlProvider;
+
+import java.util.concurrent.Executor;
 
 /**
  * Initializr service application. Enables legacy STS support for older
@@ -51,6 +57,24 @@ public class InitializrService {
 			ResourceUrlProvider resourceUrlProvider) {
 		return new LegacyStsController(metadataProvider, resourceUrlProvider);
 	}
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ProjectGenerator projectGenerator() {
+        return new PalProjectGenerator();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public MainController initializrMainController(
+            InitializrMetadataProvider metadataProvider,
+            TemplateRenderer templateRenderer,
+            ResourceUrlProvider resourceUrlProvider,
+            ProjectGenerator projectGenerator,
+            DependencyMetadataProvider dependencyMetadataProvider) {
+        return new PalMainController(metadataProvider, templateRenderer, resourceUrlProvider
+                , projectGenerator, dependencyMetadataProvider);
+    }
 
 	@Configuration
 	@EnableAsync
