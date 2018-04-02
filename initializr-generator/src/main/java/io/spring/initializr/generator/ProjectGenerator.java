@@ -86,13 +86,13 @@ public class ProjectGenerator {
 	private ApplicationEventPublisher eventPublisher;
 
 	@Autowired
-	private InitializrMetadataProvider metadataProvider;
+	protected InitializrMetadataProvider metadataProvider;
 
 	@Autowired
-	private ProjectRequestResolver requestResolver;
+	protected ProjectRequestResolver requestResolver;
 
 	@Autowired
-	private TemplateRenderer templateRenderer = new TemplateRenderer();
+	protected TemplateRenderer templateRenderer = new TemplateRenderer();
 
 	@Autowired
 	private ProjectResourceLocator projectResourceLocator = new ProjectResourceLocator();
@@ -275,7 +275,7 @@ public class ProjectGenerator {
 		return download;
 	}
 
-	private File getTemporaryDirectory() {
+	protected File getTemporaryDirectory() {
 		if (temporaryDirectory == null) {
 			temporaryDirectory = new File(tmpdir, "initializr");
 			temporaryDirectory.mkdirs();
@@ -569,11 +569,11 @@ public class ProjectGenerator {
 				&& !request.getJavaVersion().equals("1.7");
 	}
 
-	private static boolean isGradleBuild(ProjectRequest request) {
+	protected static boolean isGradleBuild(ProjectRequest request) {
 		return "gradle".equals(request.getBuild());
 	}
 
-	private static boolean isMavenBuild(ProjectRequest request) {
+	protected static boolean isMavenBuild(ProjectRequest request) {
 		return "maven".equals(request.getBuild());
 	}
 
@@ -594,7 +594,7 @@ public class ProjectGenerator {
 		return VERSION_2_0_0_M3.compareTo(bootVersion) < 0;
 	}
 
-	private byte[] doGenerateMavenPom(Map<String, Object> model) {
+	protected byte[] doGenerateMavenPom(Map<String, Object> model) {
 		return templateRenderer.process("starter-pom.xml", model).getBytes();
 	}
 
@@ -602,11 +602,11 @@ public class ProjectGenerator {
 		return templateRenderer.process("starter-build.gradle", model).getBytes();
 	}
 
-	private byte[] doGenerateGradleSettings(Map<String, Object> model) {
+	protected byte[] doGenerateGradleSettings(Map<String, Object> model) {
 		return templateRenderer.process("starter-settings.gradle", model).getBytes();
 	}
 
-	private void writeGradleWrapper(File dir, Version bootVersion) {
+	protected void writeGradleWrapper(File dir, Version bootVersion) {
 		String gradlePrefix = isGradle4Available(bootVersion) ? "gradle4" :
 				isGradle3Available(bootVersion) ? "gradle3" : "gradle";
 		writeTextResource(dir, "gradlew.bat", gradlePrefix + "/gradlew.bat");
@@ -620,7 +620,7 @@ public class ProjectGenerator {
 				gradlePrefix + "/gradle/wrapper/gradle-wrapper.jar");
 	}
 
-	private void writeMavenWrapper(File dir) {
+	protected void writeMavenWrapper(File dir) {
 		writeTextResource(dir, "mvnw.cmd", "maven/mvnw.cmd");
 		writeTextResource(dir, "mvnw", "maven/mvnw");
 
@@ -654,7 +654,7 @@ public class ProjectGenerator {
 		return target;
 	}
 
-	private File initializerProjectDir(File rootDir, ProjectRequest request) {
+	protected File initializerProjectDir(File rootDir, ProjectRequest request) {
 		if (request.getBaseDir() != null) {
 			File dir = new File(rootDir, request.getBaseDir());
 			dir.mkdirs();
@@ -670,7 +670,7 @@ public class ProjectGenerator {
 		writeText(target, body);
 	}
 
-	private void writeText(File target, String body) {
+	protected void writeText(File target, String body) {
 		try (OutputStream stream = new FileOutputStream(target)) {
 			StreamUtils.copy(body, Charset.forName("UTF-8"), stream);
 		}
@@ -688,7 +688,7 @@ public class ProjectGenerator {
 		}
 	}
 
-	private void addTempFile(String group, File file) {
+	protected void addTempFile(String group, File file) {
 		temporaryFiles.computeIfAbsent(group, key -> new ArrayList<>()).add(file);
 	}
 
