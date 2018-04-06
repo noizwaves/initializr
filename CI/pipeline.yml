@@ -1,0 +1,68 @@
+---
+resources:
+- name: initializr
+  type: git
+  source:
+    uri: {{github-initializr-fork-repository}}
+    branch: {{github-initializr-fork-branch}}
+    private_key: {{github-initializr-fork-private-key}}
+
+- name: initializr-src
+  type: git
+  source:
+    uri: {{github-initializr-src-repository}}
+    branch: {{github-initializr-src-branch}}
+
+jobs:
+- name: build
+  plan:
+  - get: initializr
+    trigger: true
+  - get: initializr-src
+    trigger: true
+  - task: build and test
+    params:
+      RSA_KEY: ((github-initializr-fork-private-key))
+    config:
+      platform: linux
+
+      image_resource:
+        type: docker-image
+        source:
+          repository: concourse/buildroot
+          tag: git
+
+      inputs:
+        - name: initializr
+
+      run:
+        path: bash
+        args:
+        - -exc
+        - |
+
+          set -e
+
+          # Prep GitHub SSH
+          [ -d ~/.ssh ] || mkdir ~/.ssh
+          touch ~/.ssh/known_hosts
+
+          echo ${RSA_KEY} | sed '/-----BEGIN RSA PRIVATE KEY-----/,/-----END RSA PRIVATE KEY-----/ {
+          s/BEGIN RSA PRIVATE KEY/BEGINRSAPRIVATEKEY/
+          s/END RSA PRIVATE KEY/ENDRSAPRIVATEKEY/
+          s/ /\n/g
+          s/BEGINRSAPRIVATEKEY/BEGIN RSA PRIVATE KEY/
+          s/ENDRSAPRIVATEKEY/END RSA PRIVATE KEY/g
+          }' > /tmp/initializr-id-rsa
+          chmod 600 /tmp/initializr-id-rsa
+
+          ssh-agent bash -c "ssh-keyscan github.com >> ~/.ssh/known_hosts"
+
+          # Update fork
+          cd initializr
+          git checkout enhanced-customization
+          git remote add spring https://github.com/spring-io/initializr.git
+          git pull --rebase spring master
+          ssh-agent bash -c "ssh-add /tmp/initializr-id-rsa; git push origin enhanced-customization --force-with-lease;"
+
+          echo "Done!"

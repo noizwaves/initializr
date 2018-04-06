@@ -1,0 +1,8 @@
+github-initializr-fork-repository: git@github.com:GITHUB_USERNAME/initializr.git
+github-initializr-fork-branch: master
+github-initializr-fork-private-key: |
+  -----BEGIN RSA PRIVATE KEY-----
+  REPLACE WITH YOUR PRIVATE KEY HERE
+  -----END RSA PRIVATE KEY-----
+github-initializr-src-repository: git@github.com:spring-io/initializr.git
+github-initializr-src-branch: master
